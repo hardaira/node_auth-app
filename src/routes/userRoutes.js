@@ -34,21 +34,21 @@ router.get('/activation/:activationToken', getUserByActivationToken);
 
 router.patch(
   '/:id/change-name',
-  // authMiddleware,
+  authMiddleware,
   // ownerMiddleware,
   changeUserName,
 );
 
 router.patch(
   '/:id/change-password',
-  // authMiddleware,
+  authMiddleware,
   // ownerMiddleware,
   changeUserPassword,
 );
 
 router.patch(
   '/:id/change-email',
-  // authMiddleware,
+  authMiddleware,
   // ownerMiddleware,
   changeUserEmail,
 );
