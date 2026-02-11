@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
   logger: true,
 });
 
-export function send ({email, subject, html}) {
+export function send({ email, subject, html }) {
   // const link = `https://yourdomain.com/activate/${token}`;
 
   return transporter.sendMail({
@@ -24,12 +24,11 @@ export function send ({email, subject, html}) {
   });
 }
 
-
 export function sendActivationEmail(email, activationToken) {
   const href = `http://localhost:5173/activation/${activationToken}`;
   const html = `<a href="${href}">Click this link to activate your account </a>`;
 
-  return send({email, html, subject:'Activate'})
+  return send({ email, html, subject: 'Activate' });
 }
 
 export function sendResetPasswordEmail(email, resetToken) {
@@ -46,11 +45,11 @@ export function sendEmailChanged(email, newEmail) {
   return send({ email, html, subject: 'Change of email' });
 }
 
-console.log('Email is sent');
+// console.log('Email is sent');
 
 export const emailService = {
   sendActivationEmail,
   sendEmailChanged,
   sendResetPasswordEmail,
-  send
+  send,
 };

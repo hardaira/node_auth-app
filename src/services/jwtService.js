@@ -33,21 +33,24 @@ import 'dotenv/config';
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+
 function sign(user) {
   const token = jwt.sign(user, ACCESS_SECRET);
+
   return token;
 }
 
 function verify(user) {
-  try{
-  return jwt.verify(user, ACCESS_SECRET);
+  try {
+    return jwt.verify(user, ACCESS_SECRET);
   } catch (e) {
     return null;
-    }
+  }
 }
 
 function signRefresh(user) {
   const token = jwt.sign(user, REFRESH_SECRET);
+
   return token;
 }
 
@@ -72,5 +75,5 @@ export const jwtService = {
   verify,
   signRefresh,
   verifyRefresh,
-verifyToken,
+  verifyToken,
 };

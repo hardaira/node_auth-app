@@ -2,9 +2,10 @@
 import express from 'express';
 import 'dotenv/config';
 import userRoutes from './routes/userRoutes.js';
-import cookieParser from 'cookie-parser'
+import cookieParser from 'cookie-parser';
 
 import cors from 'cors';
+
 // Function to create the Express server
 export const createServer = () => {
   // dotenv.config();
@@ -13,6 +14,7 @@ export const createServer = () => {
   // Middleware to parse JSON
   app.use(express.json());
   app.use(cookieParser());
+
   app.use(
     cors({
       origin: process.env.CLIENT_HOST,

@@ -1,5 +1,5 @@
 'use strict';
-import crypto from 'crypto';
+// import crypto from 'crypto';
 import { User } from '../models/userModel.js';
 
 const getAll = async () => {
@@ -9,11 +9,16 @@ const getAll = async () => {
 };
 
 const getById = async (id) => {
-   return User.findByPk(id);
+  return User.findByPk(id);
 };
 
 const normalize = (user) => {
-  return {id: user.id, name: user.name, email: user.email, activated: user.activated };
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    activated: user.activated,
+  };
 };
 
 const getByActivationToken = async (activationToken) => {
@@ -30,7 +35,13 @@ const create = async ({ name, email, password, activated }) => {
 
   // const rawResetToken = crypto.randomBytes(32).toString('hex');
   // const resetToken = hashToken(rawResetToken);
-  return User.create({ name, email, password, activationToken, activated });
+  return User.create({
+    name,
+    email,
+    password,
+    activationToken,
+    activated,
+  });
 };
 
 const activateUserByToken = async ({ activationToken }) => {
@@ -62,7 +73,6 @@ const activateUserByToken = async ({ activationToken }) => {
 //   // Return user ID for redirect
 //   return { id: user.id };
 // };
-
 
 // const remove = async (id) => {
 //   return User.destroy({ where: { id } });

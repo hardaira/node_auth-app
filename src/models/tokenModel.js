@@ -3,14 +3,14 @@ import { sequelize } from '../db.js';
 import User from './userModel.js';
 
 export const Token = sequelize.define(
-  'Token', {
+  'Token',
+  {
     refreshToken: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-
-},
-{
+  },
+  {
     tableName: 'tokens',
     timestamps: true,
     createdAt: 'created_at',

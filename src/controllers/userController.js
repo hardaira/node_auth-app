@@ -5,14 +5,13 @@ import { emailService } from '../services/emailService.js';
 import { userService } from '../services/userService.js';
 import { User } from '../models/userModel.js';
 import bcrypt from 'bcrypt';
-import crypto from 'crypto';
+// import crypto from 'crypto';
 import { Op } from 'sequelize';
 import { jwtService } from '../services/jwtService.js';
 import { tokenService } from '../services/tokenService.js';
 
 // Get all users
 export const getAllUsers = async (req, res) => {
-
   try {
     const users = await userService.getAll();
 
@@ -49,25 +48,32 @@ export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required.' });
+      return res
+        .status(400)
+        .json({ message: 'Email and password are required.' });
     }
-    console.log('AAAA');
-  const user = await userService.getByEmail(email);
+
+    // console.log('AAAA');
+    const user = await userService.getByEmail(email);
 
     if (!user) {
       return res.status(401).json({ message: 'This email is not registered' });
     }
 
     if (user.activated === false) {
-      return res.status(403).json({ message: 'Check your email to activate your account' });
+      return res
+        .status(403)
+        .json({ message: 'Check your email to activate your account' });
     }
-console.log('AAAAlllllllllllll');
+
+    // console.log('AAAAlllllllllllll');
     // TEMP (plain text)
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
       return res.status(400).json({ message: 'Wrong password' });
     }
-console.log('--------');
+    // console.log('--------');
     generateTokens(res, user);
     // const normalizedUser = userService.normalize(user);
     // const accessToken = jwtService.sign(normalizedUser);
@@ -77,15 +83,15 @@ console.log('--------');
     //   accessToken
     // });
   } catch (error) {
-    console.error('Login error:', error);
+    // console.error('Login error:', error);
     res.status(500).json({ message: 'Failed to connect to the server' });
   }
 };
 
-
 export const refresh = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
+
     if (!refreshToken) {
       return res.status(401).json({ message: 'You have to log in' });
     }
@@ -98,6 +104,7 @@ export const refresh = async (req, res) => {
     }
 
     const user = await userService.getByEmail(userData.email);
+
     return generateTokens(res, user);
   } catch (err) {
     return res.status(401).json({ message: 'Invalid refresh token' });
@@ -118,10 +125,11 @@ export const refresh = async (req, res) => {
 // }
 
 export const generateTokens = async (res, user) => {
-  console.log('/////////');
-const normalizedUser = userService.normalize(user);
+  // console.log('/////////');
+  const normalizedUser = userService.normalize(user);
   const accessToken = jwtService.sign(normalizedUser);
   const refreshToken = jwtService.signRefresh(normalizedUser);
+
   await tokenService.save(normalizedUser.id, refreshToken);
 
   res.cookie('refreshToken', refreshToken, {
@@ -139,12 +147,12 @@ const normalizedUser = userService.normalize(user);
     // path: '/users/refresh',
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
-res.status(200).json({
-  user: normalizedUser,
-  accessToken,
-});
 
-}
+  res.status(200).json({
+    user: normalizedUser,
+    accessToken,
+  });
+};
 
 export const getUserByActivationToken = async (req, res) => {
   try {
@@ -200,7 +208,7 @@ export const createUser = async (req, res) => {
     try {
       await emailService.sendActivationEmail(email, newUser.activationToken);
     } catch (emailError) {
-      console.error('Activation email failed:', emailError);
+      // console.error('Activation email failed:', emailError);
       // user is still created — this is OK
     }
 
@@ -209,20 +217,23 @@ export const createUser = async (req, res) => {
       id: newUser.id,
       name: newUser.name,
       email: newUser.email,
-      message: 'You are successfully registered. Check your email to activate your account',
+      message: 'Check your email to activate your account',
     });
   } catch (error) {
     await transaction.rollback();
-    console.error(error);
+    // console.error(error);
 
     if (error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(409).json({ message: 'This email is already registered' });
+      return res
+        .status(409)
+        .json({ message: 'This email is already registered' });
     }
 
-    return res.status(500).json({ message: 'Failed to create a user. Server problem.' });
+    return res
+      .status(500)
+      .json({ message: 'Failed to create a user. Server problem.' });
   }
 };
-
 
 // export const updateUserActivated = async (req, res) => {
 //   const { activationToken } = req.params;
@@ -261,14 +272,13 @@ export const updateUserActivated = async (req, res) => {
     user.activationToken = null;
     await user.save();
 
-
     return generateTokens(res, user);
   } catch (err) {
-    console.error(err);
+    // console.error(err);
+
     return res.status(500).json({ message: 'mistake in controller' });
   }
 };
-
 
 // export const updateUserActivated = async (req, res) => {
 //   const { activationToken } = req.params;
@@ -302,7 +312,6 @@ export const updateUserActivated = async (req, res) => {
 //   // });
 // };
 
-
 export const resetPassword = async (req, res) => {
   try {
     const { resetEmail } = req.body;
@@ -326,7 +335,7 @@ export const resetPassword = async (req, res) => {
 
     // 3️⃣ Save hashed token + expiry
     user.resetToken = hashedResetToken;
-    user.resetTokenExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    user.resetTokenExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 min
     await user.save();
 
     // 4️⃣ Send RAW token via email
@@ -335,13 +344,12 @@ export const resetPassword = async (req, res) => {
     return res.status(200).json({
       message: 'Password reset link sent',
     });
-
   } catch (error) {
-    console.error(error);
+    // console.error(error);
+
     return res.status(500).json({ message: 'Something went wrong' });
   }
 };
-
 
 export const resetUserPassword = async (req, res) => {
   const { newPassword } = req.body;
@@ -380,13 +388,13 @@ export const resetUserPassword = async (req, res) => {
 };
 
 export const changeUserName = async (req, res) => {
-
   const { id } = req.params;
   const { name } = req.body;
   const user = await User.findOne({
     where: { id },
   });
-  console.log(`New name:{name}`)
+
+  // console.log(`New name:{name}`);
 
   if (!name || name.trim() === '') {
     return res.status(400).json({ message: 'Name is required' });
@@ -408,8 +416,7 @@ export const changeUserName = async (req, res) => {
       name: user.name,
     },
   });
-}
-
+};
 
 // import { User } from '../models/User.js'; // adjust path
 
@@ -428,6 +435,7 @@ export const changeUserPassword = async (req, res) => {
   }
 
   const isMatch = await bcrypt.compare(oldPassword, user.password);
+
   if (!isMatch) {
     return res.status(400).json({ message: 'Old password is wrong' });
   }
@@ -457,6 +465,7 @@ export const changeUserEmail = async (req, res) => {
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
+
   if (!isMatch) {
     return res.status(400).json({ message: 'Password is incorrect' });
   }
@@ -486,25 +495,26 @@ export const changeUserEmail = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-  console.log('ssssssssssssssssss');
+  // console.log('ssssssssssssssssss');
 
-const refreshToken = req.cookies.refreshToken;
-if (!refreshToken) {
-  return res.status(401).json({ message: 'No refresh token' });
-}
+  const refreshToken = req.cookies.refreshToken;
 
-const userData = jwtService.verifyRefresh(refreshToken);
-const tokenFromDb = await tokenService.getByToken(refreshToken);
+  if (!refreshToken) {
+    return res.status(401).json({ message: 'No refresh token' });
+  }
 
-if (!userData || !tokenFromDb) {
-  return res.status(401).json({ message: 'You have to log in' });
-}
+  const userData = jwtService.verifyRefresh(refreshToken);
+  const tokenFromDb = await tokenService.getByToken(refreshToken);
+
+  if (!userData || !tokenFromDb) {
+    return res.status(401).json({ message: 'You have to log in' });
+  }
 
   await tokenService.remove(userData.id);
   res.clearCookie('refreshToken');
 
   res.sendStatus(204);
-}
+};
 
 // export const logout = async (req, res) => {
 //   console.log('ssssssssssssssssss');
@@ -532,8 +542,6 @@ if (!userData || !tokenFromDb) {
 //   }
 // };
 
-
-
 export default {
   getAllUsers,
   getUserById,
@@ -545,5 +553,5 @@ export default {
   changeUserEmail,
   resetUserPassword,
   refresh,
-  logout
+  logout,
 };
